@@ -38,15 +38,15 @@
             var invitation = new Invitation {
                 GeneratingElement = Settings.GeneratingElement,
                 CyclicGroup = Settings.CyclicGroup,
-                PublicKey = GeneratePublicKey(Settings.GeneratingElement, a_secret, Settings.CyclicGroup)
+                PublicKey = GeneratePublicKey(Settings.CyclicGroup, Settings.GeneratingElement, a_secret)
             };
             Settings.Invitations.Accepted.Add(invitation);
         }
 
-        private string GeneratePublicKey(int generating_element, int secret, string cyclic_group) {
+        private string GeneratePublicKey(string cyclic_group, int generating_element, int secret) {
             return BigInteger.ModPow(new BigInteger(generating_element), secret, BigInteger.Parse(cyclic_group)).ToString();
         }
-        private string GenerateSecret(string public_key, int secret, string cyclic_group) {
+        private string GenerateSecret(string cyclic_group, string public_key, int secret) {
             return BigInteger.ModPow(BigInteger.Parse(public_key), secret, BigInteger.Parse(cyclic_group)).ToString();
         }
 
@@ -55,9 +55,9 @@
             var i = e.AddedItems[0] as Invitation;
             string a_public = i.PublicKey;
             int b_secret = random.Next();
-            string b_public = GeneratePublicKey(i.GeneratingElement, b_secret, i.CyclicGroup);
-            string secret_by_a = GenerateSecret(b_public, a_secret, i.CyclicGroup);
-            string secret_by_b = GenerateSecret(a_public, b_secret, i.CyclicGroup);
+            string b_public = GeneratePublicKey(i.CyclicGroup, i.GeneratingElement, b_secret);
+            string secret_by_a = GenerateSecret(i.CyclicGroup, b_public, a_secret);
+            string secret_by_b = GenerateSecret(i.CyclicGroup, a_public, b_secret);
             var success = string.Compare(secret_by_a, secret_by_b) == 0;
         }
         private string ParseCyclicGroup(string input) {
